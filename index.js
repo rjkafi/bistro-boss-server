@@ -141,12 +141,51 @@ async function run() {
       res.send(result);
     });
 
-    // Menu and Reviews API
+    // ~~~~~~~ Menu Related API~~~~~~~~~
     app.get('/menu', async (req, res) => {
       const result = await menuCollection.find().toArray();
       res.send(result);
     });
+    // To take specific menu's id for update
+    app.get('/menu/:id', async(req,res)=>{
+      const id=req.params.id;
+      const query={_id: new ObjectId(id)};
+      const result= await menuCollection.findOne(query);
+      res.send(result);
+    })
+    // Update menu
+    app.patch('/menu/:id',async(req,res)=>{
+      const item=req.body;
+      const id=req.params.id;
+      const filter= { _id: new ObjectId(id)}
+      const updatedDoc={
+        $set:{
+          name:item.name,
+          category:item.category,
+          price: item.price,
+          recipe: item.recipe,
+          image:item.image
+        }
+      }
 
+      const result =await menuCollection.updateOne(filter, updatedDoc);
+      res.send(result)
+
+    })
+    // Post a menu
+    app.post('/menu',verifyToken, verifyAdmin, async (req,res)=>{
+      const item=req.body;
+      const result =await menuCollection.insertOne(item)
+      res.send(result);
+    })
+    // delete a specifc menu
+    app.delete('/menu/:id',verifyToken,verifyAdmin, async(req,res)=>{
+      const id=req.params.id;
+      const query={_id: new ObjectId(id)};
+      const result = await menuCollection.deleteOne(query);
+      res.send(result);
+    })
+  // ~~~~~~ Get Reviews Related Api~~~~~~~~~~~ 
     app.get('/reviews', async (req, res) => {
       const result = await reviewsCollection.find().toArray();
       res.send(result);
